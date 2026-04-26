@@ -3,6 +3,7 @@ package org.jellyfin.mobile.player.source
 import android.content.Context
 import org.jellyfin.mobile.R
 import org.jellyfin.mobile.player.deviceprofile.CodecHelpers
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.mobile.utils.Constants
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.BaseItemKind
@@ -20,6 +21,7 @@ sealed class JellyfinMediaSource(
     val item: BaseItemDto?,
     val sourceInfo: MediaSourceInfo,
     val playSessionId: String,
+    val playbackMode: PlaybackMode,
     playbackDetails: PlaybackDetails?,
 ) {
     val id: String = requireNotNull(sourceInfo.id) { "Media source has no id" }

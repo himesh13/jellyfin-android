@@ -146,6 +146,9 @@ class AppPreferences(context: Context) {
     val exoPlayerAllowBackgroundAudio: Boolean
         get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_ALLOW_BACKGROUND_AUDIO, false)
 
+    val exoPlayerAutoAudioOnlyOnMetered: Boolean
+        get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_AUTO_AUDIO_ONLY_ON_METERED, false)
+
     val exoPlayerDirectPlayAss: Boolean
         get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_DIRECT_PLAY_ASS, false)
 

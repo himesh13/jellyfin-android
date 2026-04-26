@@ -169,7 +169,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="audio_streams_button,subtitles_button,fullscreen_switcher" />
+        app:constraint_referenced_ids="audio_streams_button,subtitles_button,playback_mode_button,fullscreen_switcher" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/lock_screen_button"
@@ -250,6 +250,18 @@
         app:layout_constraintStart_toEndOf="@id/decoder_button" />
 
     <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/playback_mode_button"
+        android:layout_width="@dimen/exo_bottom_controls_size"
+        android:layout_height="@dimen/exo_bottom_controls_size"
+        android:layout_marginBottom="@dimen/exo_bottom_controls_margin"
+        android:background="@drawable/ripple_background_circular"
+        android:contentDescription="@string/player_playback_mode"
+        android:padding="@dimen/exo_bottom_controls_padding"
+        android:src="@drawable/ic_music_note_white_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/info_button" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/fullscreen_switcher"
         android:layout_width="@dimen/exo_bottom_controls_size"
         android:layout_height="@dimen/exo_bottom_controls_size"
@@ -259,5 +271,6 @@
         android:padding="@dimen/exo_bottom_controls_padding"
         android:src="@drawable/ic_fullscreen_enter_white_32dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/playback_mode_button" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,6 +12,7 @@ import org.jellyfin.mobile.data.entity.DownloadEntity
 import org.jellyfin.mobile.events.ActivityEvent
 import org.jellyfin.mobile.events.ActivityEventHandler
 import org.jellyfin.mobile.player.interaction.PlayOptions
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -34,6 +35,7 @@ class DownloadsViewModel : ViewModel(), KoinComponent {
             audioStreamIndex = 1,
             subtitleStreamIndex = -1,
             playFromDownloads = true,
+            playbackMode = PlaybackMode.VIDEO_AUDIO,
         )
         activityEventHandler.emit(ActivityEvent.LaunchNativePlayer(playOptions))
     }

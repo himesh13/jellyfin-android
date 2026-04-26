@@ -17,6 +17,7 @@ import org.jellyfin.mobile.R
 import org.jellyfin.mobile.databinding.ExoPlayerControlViewBinding
 import org.jellyfin.mobile.databinding.FragmentPlayerBinding
 import org.jellyfin.mobile.player.qualityoptions.QualityOptionsProvider
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.mobile.player.source.JellyfinMediaSource
 import org.jellyfin.mobile.player.source.LocalJellyfinMediaSource
 import org.jellyfin.mobile.player.source.RemoteJellyfinMediaSource
@@ -52,17 +53,20 @@ class PlayerMenus(
     private val qualityButton: View by playerControlsBinding::qualityButton
     private val decoderButton: View by playerControlsBinding::decoderButton
     private val infoButton: View by playerControlsBinding::infoButton
+    private val playbackModeButton: View by playerControlsBinding::playbackModeButton
     private val playbackInfo: TextView by playerBinding::playbackInfo
     private val audioStreamsMenu: PopupMenu = createAudioStreamsMenu()
     private val subtitlesMenu: PopupMenu = createSubtitlesMenu()
     private val speedMenu: PopupMenu = createSpeedMenu()
     private val qualityMenu: PopupMenu = createQualityMenu()
     private val decoderMenu: PopupMenu = createDecoderMenu()
+    private val playbackModeMenu: PopupMenu = createPlaybackModeMenu()
     private val chapterMarkingContainer: ConstraintLayout by playerControlsBinding::chapterMarkingContainer
     private val skipSegmentButton: Button by playerBinding::skipSegmentButton
 
     private var subtitleCount = 0
     private var subtitlesEnabled = false
+    private var playbackMode = PlaybackMode.VIDEO_AUDIO
 
     private val playerMenuHelper: PlayerMenuHelper = PlayerMenuHelper(
         skipMediaSegmentButton = SkipMediaSegmentButton(skipSegmentButton, fragment::onSkipMediaSegment),
@@ -118,6 +122,10 @@ class PlayerMenus(
         infoButton.setOnClickListener {
             playbackInfo.isVisible = !playbackInfo.isVisible
         }
+        playbackModeButton.setOnClickListener {
+            fragment.suppressControllerAutoHide(true)
+            playbackModeMenu.show()
+        }
         playbackInfo.setOnClickListener {
             dismissPlaybackInfo()
         }
@@ -161,9 +169,22 @@ class PlayerMenus(
         val height = videoStream?.height
         val width = videoStream?.width
         when (mediaSource) {
-            is LocalJellyfinMediaSource -> qualityButton.isVisible = false
-            is RemoteJellyfinMediaSource -> if (height != null && width != null) {
-                buildQualityMenu(qualityMenu.menu, mediaSource.maxStreamingBitrate, width, height)
+            is LocalJellyfinMediaSource -> {
+                qualityButton.isVisible = false
+                decoderButton.isVisible = false
+                playbackModeButton.isVisible = false
+            }
+            is RemoteJellyfinMediaSource -> {
+                playbackMode = mediaSource.playbackMode
+                updatePlaybackModeMenu()
+                playbackModeButton.isVisible = true
+                val isAudioOnly = playbackMode == PlaybackMode.AUDIO_ONLY
+                subtitlesButton.isVisible = !isAudioOnly && subtitleCount > 0
+                qualityButton.isVisible = !isAudioOnly
+                decoderButton.isVisible = !isAudioOnly
+                if (!isAudioOnly && height != null && width != null) {
+                    buildQualityMenu(qualityMenu.menu, mediaSource.maxStreamingBitrate, width, height)
+                }
             }
         }
 
@@ -320,6 +341,28 @@ class PlayerMenus(
         setOnDismissListener(this@PlayerMenus)
     }
 
+    private fun createPlaybackModeMenu() = PopupMenu(context, playbackModeButton).apply {
+        menu.add(
+            PLAYBACK_MODE_MENU_GROUP,
+            PlaybackMode.VIDEO_AUDIO.ordinal,
+            Menu.NONE,
+            context.getString(R.string.player_playback_mode_video_audio),
+        )
+        menu.add(
+            PLAYBACK_MODE_MENU_GROUP,
+            PlaybackMode.AUDIO_ONLY.ordinal,
+            Menu.NONE,
+            context.getString(R.string.player_playback_mode_audio_only),
+        )
+        menu.setGroupCheckable(PLAYBACK_MODE_MENU_GROUP, true, true)
+        setOnMenuItemClickListener { clickedItem ->
+            val mode = PlaybackMode.entries[clickedItem.itemId]
+            fragment.onPlaybackModeSelected(mode)
+            true
+        }
+        setOnDismissListener(this@PlayerMenus)
+    }
+
     fun updatedSelectedDecoder(type: DecoderType) {
         decoderMenu.menu.findItem(type.ordinal).isChecked = true
     }
@@ -354,6 +397,15 @@ class PlayerMenus(
         subtitlesButton.isVisible = subtitleCount > 0
         val stateSet = intArrayOf(android.R.attr.state_checked * if (subtitlesEnabled) 1 else -1)
         subtitlesButton.setImageState(stateSet, true)
+    }
+
+    private fun updatePlaybackModeMenu() {
+        playbackModeMenu.menu.findItem(playbackMode.ordinal)?.isChecked = true
+    }
+
+    fun onPlaybackModeChanged(mode: PlaybackMode) {
+        playbackMode = mode
+        updatePlaybackModeMenu()
     }
 
     private fun buildQualityMenu(menu: Menu, maxStreamingBitrate: Int?, videoWidth: Int, videoHeight: Int) {
@@ -399,6 +451,7 @@ class PlayerMenus(
         private const val SPEED_MENU_GROUP = 2
         private const val QUALITY_MENU_GROUP = 3
         private const val DECODER_MENU_GROUP = 4
+        private const val PLAYBACK_MODE_MENU_GROUP = 5
 
         private const val MAX_VIDEO_STREAMS_DISPLAY = 3
         private const val MAX_AUDIO_STREAMS_DISPLAY = 5

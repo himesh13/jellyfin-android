@@ -102,8 +102,14 @@
     <string name="pref_exoplayer_allow_press_speed_up_summary">Touch and hold the screen to temporarily speed up playback</string>
     <string name="pref_exoplayer_allow_background_audio">Background audio</string>
     <string name="pref_exoplayer_allow_background_audio_summary">Allow playing videos in the background with audio-only</string>
+    <string name="pref_exoplayer_auto_audio_only_on_metered">Auto audio-only on metered networks</string>
+    <string name="pref_exoplayer_auto_audio_only_on_metered_summary">Automatically start remote playback in audio-only mode when on cellular or other metered networks</string>
     <string name="pref_exoplayer_direct_play_ass">Allow SSA/ASS subtitles in direct play</string>
     <string name="pref_exoplayer_direct_play_ass_summary">Prevent transcoding and show subtitles with basic styling only. Advanced subtitle styling will not be available if enabled.</string>
+    <string name="player_playback_mode">Playback mode</string>
+    <string name="player_playback_mode_video_audio">Video + Audio</string>
+    <string name="player_playback_mode_audio_only">Audio only</string>
+    <string name="player_error_switch_playback_mode_failed">Failed to switch playback mode</string>
 
     <string name="external_player_app">External player app</string>
     <string name="external_player_mpv">MPV Player</string>

@@ -37,6 +37,7 @@ import org.jellyfin.mobile.databinding.FragmentPlayerBinding
 import org.jellyfin.mobile.player.PlayerException
 import org.jellyfin.mobile.player.PlayerViewModel
 import org.jellyfin.mobile.player.interaction.PlayOptions
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.mobile.player.ui.playermenuhelper.PlayerMenuHelper
 import org.jellyfin.mobile.utils.AndroidVersion
 import org.jellyfin.mobile.utils.BackPressInterceptor
@@ -109,6 +110,9 @@ class PlayerFragment : Fragment(), BackPressInterceptor {
         }
         viewModel.decoderType.observe(this) { type ->
             playerMenus?.updatedSelectedDecoder(type)
+        }
+        viewModel.playbackMode.observe(this) { mode ->
+            playerMenus?.onPlaybackModeChanged(mode)
         }
         viewModel.error.observe(this) { message ->
             val safeMessage = message.ifEmpty { requireContext().getString(R.string.player_error_unspecific_exception) }
@@ -336,6 +340,10 @@ class PlayerFragment : Fragment(), BackPressInterceptor {
 
     fun onDecoderSelected(type: DecoderType) {
         viewModel.updateDecoderType(type)
+    }
+
+    fun onPlaybackModeSelected(mode: PlaybackMode) {
+        viewModel.switchPlaybackMode(mode)
     }
 
     fun onSkipToPrevious() {

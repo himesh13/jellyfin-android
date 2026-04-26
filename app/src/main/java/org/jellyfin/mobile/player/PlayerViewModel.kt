@@ -40,6 +40,7 @@ import org.jellyfin.mobile.player.interaction.PlayerEvent
 import org.jellyfin.mobile.player.interaction.PlayerLifecycleObserver
 import org.jellyfin.mobile.player.interaction.PlayerMediaSessionCallback
 import org.jellyfin.mobile.player.interaction.PlayerNotificationHelper
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentAction
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentRepository
 import org.jellyfin.mobile.player.queue.QueueManager
@@ -116,9 +117,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     private val _player = MutableLiveData<ExoPlayer?>()
     private val _playerState = MutableLiveData<Int>()
     private val _decoderType = MutableLiveData<DecoderType>()
+    private val _playbackMode = MutableLiveData<PlaybackMode>()
     val player: LiveData<ExoPlayer?> get() = _player
     val playerState: LiveData<Int> get() = _playerState
     val decoderType: LiveData<DecoderType> get() = _decoderType
+    val playbackMode: LiveData<PlaybackMode> get() = _playbackMode
 
     // Player Menus
     private var playerMenuHelper: PlayerMenuHelper? = null
@@ -285,6 +288,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
 
     fun load(jellyfinMediaSource: JellyfinMediaSource, exoMediaSource: MediaSource, playWhenReady: Boolean) {
         val player = playerOrNull ?: return
+        _playbackMode.postValue(jellyfinMediaSource.playbackMode)
 
         player.setMediaSource(exoMediaSource)
         player.prepare()
@@ -645,6 +649,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
 
     suspend fun changeBitrate(bitrate: Int?): Boolean {
         return queueManager.changeBitrate(bitrate)
+    }
+
+    fun switchPlaybackMode(playbackMode: PlaybackMode): Job = viewModelScope.launch {
+        val didSwitch = queueManager.switchPlaybackMode(playbackMode)
+        if (!didSwitch) {
+            _error.postValue(getApplication<Application>().getString(R.string.player_error_switch_playback_mode_failed))
+        }
     }
 
     /**
