@@ -2,6 +2,7 @@ package org.jellyfin.mobile.player.queue
 
 import android.net.Uri
 import android.net.ConnectivityManager
+import android.content.Context
 import androidx.annotation.CheckResult
 import androidx.core.net.toUri
 import androidx.core.content.getSystemService
@@ -497,7 +498,7 @@ class QueueManager(
     }
 
     private fun isOnMeteredNetwork(): Boolean {
-        val connectivityManager = get<android.content.Context>().getSystemService<ConnectivityManager>()
+        val connectivityManager = get<Context>().getSystemService<ConnectivityManager>()
         return connectivityManager?.isActiveNetworkMetered == true
     }
 }
