@@ -140,6 +140,8 @@ object Constants {
 
     // Video player intent extras
     const val EXTRA_MEDIA_PLAY_OPTIONS = "org.jellyfin.mobile.MEDIA_PLAY_OPTIONS"
+    const val EXTRA_TORRENT_STREAM_URL = "org.jellyfin.mobile.TORRENT_STREAM_URL"
+    const val EXTRA_TORRENT_STREAM_TITLE = "org.jellyfin.mobile.TORRENT_STREAM_TITLE"
 
     // External player result actions
     const val MPV_PLAYER_RESULT_ACTION = "is.xyz.mpv.MPVActivity.result"

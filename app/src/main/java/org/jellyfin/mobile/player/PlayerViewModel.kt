@@ -17,6 +17,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.Clock
+import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.DefaultAnalyticsCollector
@@ -311,6 +312,17 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
                 player.reportPlaybackStart(jellyfinMediaSource)
             }
         }
+    }
+
+    fun loadTorrentStream(streamUrl: String, playWhenReady: Boolean) {
+        val player = playerOrNull ?: return
+        initialTracksSelected.set(false)
+        askToSkipMediaSegments = emptyList()
+        _playbackMode.postValue(PlaybackMode.AUDIO_ONLY)
+
+        player.setMediaItem(MediaItem.fromUri(streamUrl))
+        player.prepare()
+        player.playWhenReady = playWhenReady
     }
 
     private fun startProgressUpdates() {

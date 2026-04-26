@@ -81,6 +81,7 @@ class PlayerFragment : Fragment(), BackPressInterceptor {
 
     private val currentVideoStream: MediaStream?
         get() = viewModel.mediaSourceOrNull?.selectedVideoStream
+    private var pendingTorrentTitle: String? = null
 
     /**
      * Listener that watches the current device orientation.
@@ -135,6 +136,13 @@ class PlayerFragment : Fragment(), BackPressInterceptor {
         // Handle fragment arguments, extract playback options and start playback
         lifecycleScope.launch {
             val context = requireContext()
+            val torrentStreamUrl = requireArguments().getString(Constants.EXTRA_TORRENT_STREAM_URL)
+            if (!torrentStreamUrl.isNullOrBlank()) {
+                pendingTorrentTitle = requireArguments().getString(Constants.EXTRA_TORRENT_STREAM_TITLE)
+                viewModel.loadTorrentStream(torrentStreamUrl, playWhenReady = true)
+                return@launch
+            }
+
             val playOptions = requireArguments().getParcelableCompat<PlayOptions>(Constants.EXTRA_MEDIA_PLAY_OPTIONS)
             if (playOptions == null) {
                 context.toast(R.string.player_error_invalid_play_options)
@@ -205,6 +213,9 @@ class PlayerFragment : Fragment(), BackPressInterceptor {
 
         // Create playback menus
         playerMenus = PlayerMenus(this, playerBinding, playerControlsBinding)
+        if (!pendingTorrentTitle.isNullOrBlank()) {
+            toolbarTitle.text = pendingTorrentTitle
+        }
 
         // Set controller timeout
         suppressControllerAutoHide(false)

@@ -89,7 +89,13 @@ class ActivityEventHandler(
                         Toast.makeText(this@handleEvent, R.string.torrent_streaming_disabled, Toast.LENGTH_SHORT).show()
                         return@launch
                     }
-                    torrentEngine.startStreaming(event.request).onFailure {
+                    torrentEngine.startStreaming(event.request).onSuccess { streamSession ->
+                        val args = Bundle().apply {
+                            putString(Constants.EXTRA_TORRENT_STREAM_URL, streamSession.localStreamUrl)
+                            putString(Constants.EXTRA_TORRENT_STREAM_TITLE, event.request.title)
+                        }
+                        supportFragmentManager.addFragment<PlayerFragment>(args)
+                    }.onFailure {
                         Toast.makeText(this@handleEvent, R.string.torrent_streaming_failed, Toast.LENGTH_SHORT).show()
                     }
                 }
