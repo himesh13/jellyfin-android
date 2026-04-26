@@ -27,6 +27,7 @@ import org.jellyfin.sdk.model.api.ChapterInfo
 import org.jellyfin.sdk.model.api.MediaStream
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import timber.log.Timber
 import java.util.Locale
 
 /**
@@ -400,7 +401,12 @@ class PlayerMenus(
     }
 
     private fun updatePlaybackModeMenu() {
-        playbackModeMenu.menu.findItem(playbackMode.ordinal)?.isChecked = true
+        val item = playbackModeMenu.menu.findItem(playbackMode.ordinal)
+        if (item == null) {
+            Timber.w("Playback mode menu item not found for mode %s", playbackMode)
+            return
+        }
+        item.isChecked = true
     }
 
     fun onPlaybackModeChanged(mode: PlaybackMode) {

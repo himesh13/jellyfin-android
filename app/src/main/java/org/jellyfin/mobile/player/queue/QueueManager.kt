@@ -148,6 +148,8 @@ class QueueManager(
             subtitleStreamIndex = subtitleStreamIndex,
         ).onSuccess { jellyfinMediaSource ->
             if (playbackMode == PlaybackMode.AUDIO_ONLY && jellyfinMediaSource.selectedVideoStream != null) {
+                // Some servers/content combinations don't expose a truly audio-only source.
+                // In that case we gracefully fallback to the regular video+audio stream.
                 currentPlaybackMode = PlaybackMode.VIDEO_AUDIO
                 startRemotePlayback(
                     itemId = itemId,
