@@ -102,8 +102,14 @@
     <string name="pref_exoplayer_allow_press_speed_up_summary">Touch and hold the screen to temporarily speed up playback</string>
     <string name="pref_exoplayer_allow_background_audio">Background audio</string>
     <string name="pref_exoplayer_allow_background_audio_summary">Allow playing videos in the background with audio-only</string>
+    <string name="pref_exoplayer_auto_audio_only_on_metered">Auto audio-only on metered networks</string>
+    <string name="pref_exoplayer_auto_audio_only_on_metered_summary">Automatically start remote playback in audio-only mode when on cellular or other metered networks</string>
     <string name="pref_exoplayer_direct_play_ass">Allow SSA/ASS subtitles in direct play</string>
     <string name="pref_exoplayer_direct_play_ass_summary">Prevent transcoding and show subtitles with basic styling only. Advanced subtitle styling will not be available if enabled.</string>
+    <string name="player_playback_mode">Playback mode</string>
+    <string name="player_playback_mode_video_audio">Video + Audio</string>
+    <string name="player_playback_mode_audio_only">Audio only</string>
+    <string name="player_error_switch_playback_mode_failed">Failed to switch playback mode</string>
 
     <string name="external_player_app">External player app</string>
     <string name="external_player_mpv">MPV Player</string>
@@ -137,6 +143,15 @@
     <string name="thumbnail_desc">Thumbnail</string>
     <string name="store_videos_in_internal_storage">Store videos in internal storage</string>
     <string name="stored_videos_in_internal_storage_desc">Videos such as movies and TV shows will be stored in the app\'s internal storage. Allowing access from within the app.</string>
+    <string name="pref_category_torrent_streaming">Torrent streaming (experimental)</string>
+    <string name="pref_torrent_wifi_only">Wi-Fi only torrent streaming</string>
+    <string name="pref_torrent_wifi_only_summary">Allow torrent streaming only on unmetered Wi-Fi networks</string>
+    <string name="pref_torrent_auto_cleanup">Auto clean torrent cache</string>
+    <string name="pref_torrent_auto_cleanup_summary">Delete torrent data from cache automatically when playback ends or fails</string>
+    <string name="pref_torrent_cache_budget">Torrent cache budget</string>
+    <string name="pref_torrent_cache_budget_summary">Maximum temporary storage used for torrent playback data</string>
+    <string name="torrent_streaming_disabled">Torrent streaming is currently disabled in this build.</string>
+    <string name="torrent_streaming_failed">Failed to start torrent streaming.</string>
     <string name="tv_show_desc">%1$s - S%2$dE%3$d</string>
     <string name="downloading_desc">Downloading %1$d titles</string>
     <string name="downloaded">Downloaded %1$s</string>

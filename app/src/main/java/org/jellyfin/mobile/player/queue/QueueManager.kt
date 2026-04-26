@@ -1,8 +1,11 @@
 package org.jellyfin.mobile.player.queue
 
 import android.net.Uri
+import android.net.ConnectivityManager
+import android.content.Context
 import androidx.annotation.CheckResult
 import androidx.core.net.toUri
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.media3.common.MediaItem
@@ -14,6 +17,7 @@ import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import org.jellyfin.mobile.data.dao.DownloadDao
 import org.jellyfin.mobile.player.PlayerException
 import org.jellyfin.mobile.player.PlayerViewModel
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.mobile.player.deviceprofile.DeviceProfileBuilder
 import org.jellyfin.mobile.player.interaction.PlayOptions
 import org.jellyfin.mobile.player.source.ExternalSubtitleStream
@@ -36,6 +40,7 @@ import org.koin.core.component.inject
 import java.io.File
 import java.util.UUID
 import kotlin.time.Duration
+import org.jellyfin.mobile.app.AppPreferences
 
 class QueueManager(
     private val viewModel: PlayerViewModel,
@@ -44,16 +49,19 @@ class QueueManager(
     private val videosApi: VideosApi = apiClient.videosApi
     private val mediaSourceResolver: MediaSourceResolver by inject()
     private val deviceProfileBuilder: DeviceProfileBuilder by inject()
-    private val deviceProfile = deviceProfileBuilder.getDeviceProfile()
+    private val appPreferences: AppPreferences by inject()
 
     private var currentQueue: List<UUID> = emptyList()
     private var currentQueueIndex: Int = 0
+    private var currentPlaybackMode: PlaybackMode = PlaybackMode.VIDEO_AUDIO
 
     private val _currentMediaSource: MutableLiveData<JellyfinMediaSource> = MutableLiveData()
     val currentMediaSource: LiveData<JellyfinMediaSource>
         get() = _currentMediaSource
 
     fun getCurrentMediaSourceOrNull(): JellyfinMediaSource? = currentMediaSource.value
+
+    fun getCurrentPlaybackMode(): PlaybackMode = currentPlaybackMode
 
     /**
      * Handle initial playback options from fragment.
@@ -64,6 +72,10 @@ class QueueManager(
     suspend fun initializePlaybackQueue(playOptions: PlayOptions): PlayerException? {
         currentQueue = playOptions.ids
         currentQueueIndex = playOptions.startIndex
+        currentPlaybackMode = when {
+            appPreferences.exoPlayerAutoAudioOnlyOnMetered && isOnMeteredNetwork() -> PlaybackMode.AUDIO_ONLY
+            else -> playOptions.playbackMode
+        }
 
         val itemId = when {
             currentQueue.isNotEmpty() -> currentQueue[currentQueueIndex]
@@ -80,6 +92,7 @@ class QueueManager(
             else -> startRemotePlayback(
                 itemId = itemId,
                 mediaSourceId = playOptions.mediaSourceId,
+                playbackMode = currentPlaybackMode,
                 maxStreamingBitrate = null,
                 startTime = playOptions.startPosition,
                 audioStreamIndex = playOptions.audioStreamIndex,
@@ -118,26 +131,54 @@ class QueueManager(
     private suspend fun startRemotePlayback(
         itemId: UUID,
         mediaSourceId: String?,
+        playbackMode: PlaybackMode,
         maxStreamingBitrate: Int?,
         startTime: Duration? = null,
         audioStreamIndex: Int? = null,
         subtitleStreamIndex: Int? = null,
         playWhenReady: Boolean = true,
+        allowAudioOnlyFallback: Boolean = true,
     ): PlayerException? {
         mediaSourceResolver.resolveMediaSource(
             itemId = itemId,
             mediaSourceId = mediaSourceId,
-            deviceProfile = deviceProfile,
+            deviceProfile = deviceProfileBuilder.getDeviceProfile(playbackMode),
+            playbackMode = playbackMode,
             maxStreamingBitrate = maxStreamingBitrate,
             startTime = startTime,
             audioStreamIndex = audioStreamIndex,
             subtitleStreamIndex = subtitleStreamIndex,
         ).onSuccess { jellyfinMediaSource ->
+            if (
+                playbackMode == PlaybackMode.AUDIO_ONLY &&
+                allowAudioOnlyFallback &&
+                jellyfinMediaSource.selectedVideoStream != null
+            ) {
+                // Some servers/content combinations don't expose a truly audio-only source.
+                // In that case we gracefully fallback to the regular video+audio stream.
+                val fallbackError = startRemotePlayback(
+                    itemId = itemId,
+                    mediaSourceId = mediaSourceId,
+                    playbackMode = PlaybackMode.VIDEO_AUDIO,
+                    maxStreamingBitrate = maxStreamingBitrate,
+                    startTime = startTime,
+                    audioStreamIndex = audioStreamIndex,
+                    subtitleStreamIndex = subtitleStreamIndex,
+                    playWhenReady = playWhenReady,
+                    allowAudioOnlyFallback = false,
+                )
+                if (fallbackError == null) {
+                    currentPlaybackMode = PlaybackMode.VIDEO_AUDIO
+                }
+                return fallbackError
+            }
+
             // Ensure transcoding of the current element is stopped
             getCurrentMediaSourceOrNull()?.let { oldMediaSource ->
                 viewModel.stopTranscoding(oldMediaSource as RemoteJellyfinMediaSource)
             }
 
+            currentPlaybackMode = playbackMode
             _currentMediaSource.value = jellyfinMediaSource
 
             // Load new media source
@@ -178,6 +219,7 @@ class QueueManager(
         return startRemotePlayback(
             itemId = currentMediaSource.itemId,
             mediaSourceId = currentMediaSource.id,
+            playbackMode = currentMediaSource.playbackMode,
             maxStreamingBitrate = bitrate,
             startTime = currentPlayState.position,
             audioStreamIndex = currentMediaSource.selectedAudioStreamIndex,
@@ -198,6 +240,7 @@ class QueueManager(
         startRemotePlayback(
             itemId = currentQueue[--currentQueueIndex],
             mediaSourceId = null,
+            playbackMode = currentMediaSource.playbackMode,
             maxStreamingBitrate = currentMediaSource.maxStreamingBitrate,
         )
         return true
@@ -214,6 +257,7 @@ class QueueManager(
             is RemoteJellyfinMediaSource -> startRemotePlayback(
                 itemId = currentQueue[++currentQueueIndex],
                 mediaSourceId = null,
+                playbackMode = currentMediaSource.playbackMode,
                 maxStreamingBitrate = currentMediaSource.maxStreamingBitrate,
             )
             null -> return false
@@ -387,6 +431,7 @@ class QueueManager(
             is RemoteJellyfinMediaSource -> startRemotePlayback(
                 itemId = currentMediaSource.itemId,
                 mediaSourceId = currentMediaSource.id,
+                playbackMode = currentMediaSource.playbackMode,
                 maxStreamingBitrate = currentMediaSource.maxStreamingBitrate,
                 startTime = currentPlayState.position,
                 audioStreamIndex = stream.index,
@@ -420,6 +465,7 @@ class QueueManager(
             is RemoteJellyfinMediaSource -> startRemotePlayback(
                 itemId = mediaSource.itemId,
                 mediaSourceId = mediaSource.id,
+                playbackMode = mediaSource.playbackMode,
                 maxStreamingBitrate = mediaSource.maxStreamingBitrate,
                 startTime = currentPlayState.position,
                 audioStreamIndex = mediaSource.selectedAudioStreamIndex,
@@ -429,5 +475,30 @@ class QueueManager(
             null -> return false
         }
         return true
+    }
+
+    suspend fun switchPlaybackMode(playbackMode: PlaybackMode): Boolean {
+        val currentMediaSource = getCurrentMediaSourceOrNull() as? RemoteJellyfinMediaSource ?: return false
+        if (currentMediaSource.playbackMode == playbackMode) return true
+        val currentPlayState = viewModel.getStateAndPause() ?: return false
+
+        return startRemotePlayback(
+            itemId = currentMediaSource.itemId,
+            mediaSourceId = currentMediaSource.id,
+            playbackMode = playbackMode,
+            maxStreamingBitrate = currentMediaSource.maxStreamingBitrate,
+            startTime = currentPlayState.position,
+            audioStreamIndex = currentMediaSource.selectedAudioStreamIndex,
+            subtitleStreamIndex = when (playbackMode) {
+                PlaybackMode.AUDIO_ONLY -> -1
+                PlaybackMode.VIDEO_AUDIO -> currentMediaSource.selectedSubtitleStreamIndex
+            },
+            playWhenReady = currentPlayState.playWhenReady,
+        ) == null
+    }
+
+    private fun isOnMeteredNetwork(): Boolean {
+        val connectivityManager = get<Context>().getSystemService<ConnectivityManager>()
+        return connectivityManager?.isActiveNetworkMetered == true
     }
 }

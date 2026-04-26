@@ -38,12 +38,17 @@ object Constants {
     const val PREF_EXOPLAYER_REMEMBER_BRIGHTNESS = "pref_exoplayer_remember_brightness"
     const val PREF_EXOPLAYER_BRIGHTNESS = "pref_exoplayer_brightness"
     const val PREF_EXOPLAYER_ALLOW_BACKGROUND_AUDIO = "pref_exoplayer_allow_background_audio"
+    const val PREF_EXOPLAYER_AUTO_AUDIO_ONLY_ON_METERED = "pref_exoplayer_auto_audio_only_on_metered"
     const val PREF_EXOPLAYER_DIRECT_PLAY_ASS = "pref_exoplayer_direct_play_ass"
     const val PREF_EXTERNAL_PLAYER_APP = "pref_external_player_app"
     const val PREF_SUBTITLE_STYLE = "pref_subtitle_style"
     const val PREF_DOWNLOAD_LOCATION = "pref_download_location"
     const val PREF_DOWNLOAD_INTERNAL = "pref_download_internal"
     const val PREF_MEDIA_SEGMENT_ACTIONS = "pref_media_segment_actions"
+    const val PREF_TORRENT_PROVIDER_CONFIG = "pref_torrent_provider_config"
+    const val PREF_TORRENT_CACHE_MAX_MB = "pref_torrent_cache_max_mb"
+    const val PREF_TORRENT_WIFI_ONLY = "pref_torrent_wifi_only"
+    const val PREF_TORRENT_AUTO_CLEANUP = "pref_torrent_auto_cleanup"
 
     // InputManager commands
     const val PLAYBACK_MANAGER_COMMAND_PLAY = "unpause"
@@ -135,6 +140,8 @@ object Constants {
 
     // Video player intent extras
     const val EXTRA_MEDIA_PLAY_OPTIONS = "org.jellyfin.mobile.MEDIA_PLAY_OPTIONS"
+    const val EXTRA_TORRENT_STREAM_URL = "org.jellyfin.mobile.TORRENT_STREAM_URL"
+    const val EXTRA_TORRENT_STREAM_TITLE = "org.jellyfin.mobile.TORRENT_STREAM_TITLE"
 
     // External player result actions
     const val MPV_PLAYER_RESULT_ACTION = "is.xyz.mpv.MPVActivity.result"

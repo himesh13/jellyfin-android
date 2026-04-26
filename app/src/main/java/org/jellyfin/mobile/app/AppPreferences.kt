@@ -146,6 +146,9 @@ class AppPreferences(context: Context) {
     val exoPlayerAllowBackgroundAudio: Boolean
         get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_ALLOW_BACKGROUND_AUDIO, false)
 
+    val exoPlayerAutoAudioOnlyOnMetered: Boolean
+        get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_AUTO_AUDIO_ONLY_ON_METERED, false)
+
     val exoPlayerDirectPlayAss: Boolean
         get() = sharedPreferences.getBoolean(Constants.PREF_EXOPLAYER_DIRECT_PLAY_ASS, false)
 
@@ -153,4 +156,20 @@ class AppPreferences(context: Context) {
     var externalPlayerApp: String
         get() = sharedPreferences.getString(Constants.PREF_EXTERNAL_PLAYER_APP, ExternalPlayerPackage.SYSTEM_DEFAULT)!!
         set(value) = sharedPreferences.edit { putString(Constants.PREF_EXTERNAL_PLAYER_APP, value) }
+
+    var torrentProviderConfig: String
+        get() = sharedPreferences.getString(Constants.PREF_TORRENT_PROVIDER_CONFIG, "[]")!!
+        set(value) = sharedPreferences.edit { putString(Constants.PREF_TORRENT_PROVIDER_CONFIG, value) }
+
+    var torrentCacheMaxMb: Int
+        get() = sharedPreferences.getInt(Constants.PREF_TORRENT_CACHE_MAX_MB, 2_048)
+        set(value) = sharedPreferences.edit { putInt(Constants.PREF_TORRENT_CACHE_MAX_MB, value.coerceAtLeast(256)) }
+
+    var torrentWifiOnly: Boolean
+        get() = sharedPreferences.getBoolean(Constants.PREF_TORRENT_WIFI_ONLY, true)
+        set(value) = sharedPreferences.edit { putBoolean(Constants.PREF_TORRENT_WIFI_ONLY, value) }
+
+    var torrentAutoCleanup: Boolean
+        get() = sharedPreferences.getBoolean(Constants.PREF_TORRENT_AUTO_CLEANUP, true)
+        set(value) = sharedPreferences.edit { putBoolean(Constants.PREF_TORRENT_AUTO_CLEANUP, value) }
 }

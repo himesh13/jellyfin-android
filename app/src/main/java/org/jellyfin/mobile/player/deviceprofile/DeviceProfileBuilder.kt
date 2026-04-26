@@ -2,6 +2,7 @@ package org.jellyfin.mobile.player.deviceprofile
 
 import android.media.MediaCodecList
 import org.jellyfin.mobile.app.AppPreferences
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.mobile.utils.Constants
 import org.jellyfin.sdk.model.api.CodecProfile
 import org.jellyfin.sdk.model.api.CodecType
@@ -101,7 +102,11 @@ class DeviceProfileBuilder(
         )
     }
 
-    fun getDeviceProfile(): DeviceProfile {
+    fun getDeviceProfile(playbackMode: PlaybackMode = PlaybackMode.VIDEO_AUDIO): DeviceProfile {
+        if (playbackMode == PlaybackMode.AUDIO_ONLY) {
+            return getAudioOnlyDeviceProfile()
+        }
+
         val containerProfiles = ArrayList<ContainerProfile>()
         val directPlayProfiles = ArrayList<DirectPlayProfile>()
         val codecProfiles = ArrayList<CodecProfile>()
@@ -151,6 +156,40 @@ class DeviceProfileBuilder(
             transcodingProfiles = transcodingProfiles,
             containerProfiles = containerProfiles,
             codecProfiles = codecProfiles,
+            subtitleProfiles = subtitleProfiles,
+            maxStreamingBitrate = MAX_STREAMING_BITRATE,
+            maxStaticBitrate = MAX_STATIC_BITRATE,
+            musicStreamingTranscodingBitrate = MAX_MUSIC_TRANSCODING_BITRATE,
+        )
+    }
+
+    private fun getAudioOnlyDeviceProfile(): DeviceProfile {
+        val audioContainerProfiles = ArrayList<ContainerProfile>()
+        val audioDirectPlayProfiles = ArrayList<DirectPlayProfile>()
+        for (i in SUPPORTED_CONTAINER_FORMATS.indices) {
+            val codecs = supportedAudioCodecs[i]
+            if (codecs.isEmpty()) continue
+            val container = SUPPORTED_CONTAINER_FORMATS[i]
+            audioContainerProfiles += ContainerProfile(
+                type = DlnaProfileType.AUDIO,
+                container = container,
+                conditions = emptyList(),
+            )
+            audioDirectPlayProfiles += DirectPlayProfile(
+                type = DlnaProfileType.AUDIO,
+                container = container,
+                audioCodec = codecs.joinToString(","),
+            )
+        }
+
+        val subtitleProfiles = getSubtitleProfiles(emptyArray(), EXO_EXTERNAL_SUBTITLES)
+        val audioTranscodingProfiles = transcodingProfiles.filter { profile -> profile.type == DlnaProfileType.AUDIO }
+        return DeviceProfile(
+            name = "${Constants.APP_INFO_NAME} Audio Only",
+            directPlayProfiles = audioDirectPlayProfiles,
+            transcodingProfiles = audioTranscodingProfiles,
+            containerProfiles = audioContainerProfiles,
+            codecProfiles = emptyList(),
             subtitleProfiles = subtitleProfiles,
             maxStreamingBitrate = MAX_STREAMING_BITRATE,
             maxStaticBitrate = MAX_STATIC_BITRATE,

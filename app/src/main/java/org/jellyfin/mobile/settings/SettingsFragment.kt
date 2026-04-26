@@ -21,6 +21,7 @@ import de.Maxr1998.modernpreferences.helpers.screen
 import de.Maxr1998.modernpreferences.helpers.singleChoice
 import de.Maxr1998.modernpreferences.preferences.CheckBoxPreference
 import de.Maxr1998.modernpreferences.preferences.choice.SelectionItem
+import org.jellyfin.mobile.BuildConfig
 import org.jellyfin.mobile.R
 import org.jellyfin.mobile.app.AppPreferences
 import org.jellyfin.mobile.databinding.FragmentSettingsBinding
@@ -43,6 +44,7 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
     private lateinit var pressSpeedUpPreference: CheckBoxPreference
     private lateinit var rememberBrightnessPreference: Preference
     private lateinit var backgroundAudioPreference: Preference
+    private lateinit var autoAudioOnlyOnMeteredPreference: Preference
     private lateinit var directPlayAssPreference: Preference
     private lateinit var externalPlayerChoicePreference: Preference
 
@@ -108,6 +110,7 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
                 rememberBrightnessPreference.enabled = selection == VideoPlayerType.EXO_PLAYER && swipeGesturesPreference.checked
                 pressSpeedUpPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 backgroundAudioPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
+                autoAudioOnlyOnMeteredPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 directPlayAssPreference.enabled = selection == VideoPlayerType.EXO_PLAYER
                 externalPlayerChoicePreference.enabled = selection == VideoPlayerType.EXTERNAL_PLAYER
             }
@@ -140,6 +143,11 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
         backgroundAudioPreference = checkBox(Constants.PREF_EXOPLAYER_ALLOW_BACKGROUND_AUDIO) {
             titleRes = R.string.pref_exoplayer_allow_background_audio
             summaryRes = R.string.pref_exoplayer_allow_background_audio_summary
+            enabled = appPreferences.videoPlayerType == VideoPlayerType.EXO_PLAYER
+        }
+        autoAudioOnlyOnMeteredPreference = checkBox(Constants.PREF_EXOPLAYER_AUTO_AUDIO_ONLY_ON_METERED) {
+            titleRes = R.string.pref_exoplayer_auto_audio_only_on_metered
+            summaryRes = R.string.pref_exoplayer_auto_audio_only_on_metered_summary
             enabled = appPreferences.videoPlayerType == VideoPlayerType.EXO_PLAYER
         }
         directPlayAssPreference = checkBox(Constants.PREF_EXOPLAYER_DIRECT_PLAY_ASS) {
@@ -244,11 +252,41 @@ class SettingsFragment : Fragment(), BackPressInterceptor {
             summaryRes = R.string.stored_videos_in_internal_storage_desc
             defaultValue = true
         }
+
+        if (BuildConfig.ENABLE_TORRENT_STREAMING) {
+            categoryHeader(PREF_CATEGORY_TORRENT_STREAMING) {
+                titleRes = R.string.pref_category_torrent_streaming
+            }
+            checkBox(Constants.PREF_TORRENT_WIFI_ONLY) {
+                titleRes = R.string.pref_torrent_wifi_only
+                summaryRes = R.string.pref_torrent_wifi_only_summary
+                defaultValue = true
+            }
+            checkBox(Constants.PREF_TORRENT_AUTO_CLEANUP) {
+                titleRes = R.string.pref_torrent_auto_cleanup
+                summaryRes = R.string.pref_torrent_auto_cleanup_summary
+                defaultValue = true
+            }
+            singleChoice(
+                Constants.PREF_TORRENT_CACHE_MAX_MB,
+                listOf(
+                    SelectionItem(1024, "1 GB", null),
+                    SelectionItem(2048, "2 GB", null),
+                    SelectionItem(4096, "4 GB", null),
+                    SelectionItem(8192, "8 GB", null),
+                ),
+            ) {
+                titleRes = R.string.pref_torrent_cache_budget
+                summaryRes = R.string.pref_torrent_cache_budget_summary
+                initialSelection = 2048
+            }
+        }
     }
 
     companion object {
         const val PREF_CATEGORY_MUSIC_PLAYER = "pref_category_music"
         const val PREF_CATEGORY_VIDEO_PLAYER = "pref_category_video"
         const val PREF_CATEGORY_DOWNLOADS = "pref_category_downloads"
+        const val PREF_CATEGORY_TORRENT_STREAMING = "pref_category_torrent_streaming"
     }
 }

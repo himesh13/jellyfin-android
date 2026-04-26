@@ -17,6 +17,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.Clock
+import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.DefaultAnalyticsCollector
@@ -40,11 +41,13 @@ import org.jellyfin.mobile.player.interaction.PlayerEvent
 import org.jellyfin.mobile.player.interaction.PlayerLifecycleObserver
 import org.jellyfin.mobile.player.interaction.PlayerMediaSessionCallback
 import org.jellyfin.mobile.player.interaction.PlayerNotificationHelper
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentAction
 import org.jellyfin.mobile.player.mediasegments.MediaSegmentRepository
 import org.jellyfin.mobile.player.queue.QueueManager
 import org.jellyfin.mobile.player.source.JellyfinMediaSource
 import org.jellyfin.mobile.player.source.RemoteJellyfinMediaSource
+import org.jellyfin.mobile.torrent.TorrentEngine
 import org.jellyfin.mobile.player.ui.DecoderType
 import org.jellyfin.mobile.player.ui.DisplayPreferences
 import org.jellyfin.mobile.player.ui.PlayState
@@ -111,14 +114,17 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     val mediaSourceOrNull: JellyfinMediaSource?
         get() = queueManager.getCurrentMediaSourceOrNull()
     private val mediaSegmentRepository: MediaSegmentRepository by inject()
+    private val torrentEngine: TorrentEngine by inject()
 
     // ExoPlayer
     private val _player = MutableLiveData<ExoPlayer?>()
     private val _playerState = MutableLiveData<Int>()
     private val _decoderType = MutableLiveData<DecoderType>()
+    private val _playbackMode = MutableLiveData<PlaybackMode>()
     val player: LiveData<ExoPlayer?> get() = _player
     val playerState: LiveData<Int> get() = _playerState
     val decoderType: LiveData<DecoderType> get() = _decoderType
+    val playbackMode: LiveData<PlaybackMode> get() = _playbackMode
 
     // Player Menus
     private var playerMenuHelper: PlayerMenuHelper? = null
@@ -285,6 +291,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
 
     fun load(jellyfinMediaSource: JellyfinMediaSource, exoMediaSource: MediaSource, playWhenReady: Boolean) {
         val player = playerOrNull ?: return
+        _playbackMode.postValue(jellyfinMediaSource.playbackMode)
 
         player.setMediaSource(exoMediaSource)
         player.prepare()
@@ -305,6 +312,17 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
                 player.reportPlaybackStart(jellyfinMediaSource)
             }
         }
+    }
+
+    fun loadTorrentStream(streamUrl: String, playWhenReady: Boolean) {
+        val player = playerOrNull ?: return
+        initialTracksSelected.set(false)
+        askToSkipMediaSegments = emptyList()
+        _playbackMode.postValue(PlaybackMode.AUDIO_ONLY)
+
+        player.setMediaItem(MediaItem.fromUri(streamUrl))
+        player.prepare()
+        player.playWhenReady = playWhenReady
     }
 
     private fun startProgressUpdates() {
@@ -647,6 +665,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
         return queueManager.changeBitrate(bitrate)
     }
 
+    fun switchPlaybackMode(playbackMode: PlaybackMode): Job = viewModelScope.launch {
+        val didSwitch = queueManager.switchPlaybackMode(playbackMode)
+        if (!didSwitch) {
+            _error.postValue(getApplication<Application>().getString(R.string.player_error_switch_playback_mode_failed))
+        }
+    }
+
     /**
      * Set the playback speed to [speed]
      *
@@ -676,6 +701,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     fun stop() {
         pause()
         reportPlaybackStop()
+        viewModelScope.launch { torrentEngine.stopStreaming() }
         releasePlayer()
     }
 
@@ -768,6 +794,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
 
     override fun onCleared() {
         reportPlaybackStop()
+        viewModelScope.launch { torrentEngine.stopStreaming() }
         ProcessLifecycleOwner.get().lifecycle.removeObserver(lifecycleObserver)
         releasePlayer()
     }

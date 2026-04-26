@@ -1,6 +1,7 @@
 package org.jellyfin.mobile.player.source
 
 import kotlinx.serialization.Serializable
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.sdk.model.api.BaseItemDto
 import org.jellyfin.sdk.model.api.MediaSourceInfo
 import org.jellyfin.sdk.model.api.PlayMethod
@@ -13,10 +14,11 @@ class LocalJellyfinMediaSource(
     sourceInfo: MediaSourceInfo,
     playSessionId: String,
     playbackDetails: PlaybackDetails? = null,
+    playbackMode: PlaybackMode = PlaybackMode.VIDEO_AUDIO,
     val localDirectoryUri: String,
     val remoteFileUri: String,
     val downloadSize: Long,
-) : JellyfinMediaSource(itemId, item, sourceInfo, playSessionId, playbackDetails) {
+) : JellyfinMediaSource(itemId, item, sourceInfo, playSessionId, playbackMode, playbackDetails) {
     override val playMethod: PlayMethod = PlayMethod.DIRECT_PLAY
 
     constructor(source: JellyfinMediaSource, downloadFolder: String, downloadUrl: String, downloadSize: Long) : this(
@@ -25,6 +27,7 @@ class LocalJellyfinMediaSource(
         source.sourceInfo,
         source.playSessionId,
         PlaybackDetails(source.startTime, source.selectedAudioStreamIndex, source.selectedSubtitleStreamIndex),
+        source.playbackMode,
         downloadFolder,
         downloadUrl,
         downloadSize,

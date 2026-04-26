@@ -3,6 +3,7 @@ package org.jellyfin.mobile.player.source
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jellyfin.mobile.player.PlayerException
+import org.jellyfin.mobile.player.interaction.PlaybackMode
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.exception.ApiClientException
 import org.jellyfin.sdk.api.client.extensions.mediaInfoApi
@@ -27,6 +28,7 @@ class MediaSourceResolver(private val apiClient: ApiClient) {
         itemId: UUID,
         mediaSourceId: String? = null,
         deviceProfile: DeviceProfile? = null,
+        playbackMode: PlaybackMode = PlaybackMode.VIDEO_AUDIO,
         maxStreamingBitrate: Int? = null,
         startTime: Duration? = null,
         audioStreamIndex: Int? = null,
@@ -82,6 +84,7 @@ class MediaSourceResolver(private val apiClient: ApiClient) {
                 item = item,
                 sourceInfo = mediaSourceInfo,
                 playSessionId = playSessionId,
+                playbackMode = playbackMode,
                 liveStreamId = mediaSourceInfo.liveStreamId,
                 maxStreamingBitrate = maxStreamingBitrate,
                 playbackDetails = PlaybackDetails(startTime, audioStreamIndex, subtitleStreamIndex),

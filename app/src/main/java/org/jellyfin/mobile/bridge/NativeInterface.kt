@@ -23,6 +23,7 @@ import org.jellyfin.mobile.utils.Constants.EXTRA_POSITION
 import org.jellyfin.mobile.utils.Constants.EXTRA_TITLE
 import org.jellyfin.mobile.webapp.RemotePlayerService
 import org.jellyfin.mobile.webapp.RemoteVolumeProvider
+import org.jellyfin.mobile.torrent.TorrentPlaybackRequest
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.api.client.util.AuthorizationHeaderBuilder
 import org.json.JSONArray
@@ -157,6 +158,31 @@ class NativeInterface(private val context: Context) : KoinComponent {
     @JavascriptInterface
     fun openDownloads() {
         emitEvent(ActivityEvent.OpenDownloads)
+    }
+
+    @JavascriptInterface
+    fun launchTorrentPlayer(args: String): Boolean {
+        return try {
+            val json = JSONObject(args)
+            val trackersJson = json.optJSONArray("trackers")
+            val trackers = trackersJson?.let { array ->
+                (0 until array.length()).map { index -> array.optString(index) }
+            } ?: emptyList()
+            emitEvent(
+                ActivityEvent.LaunchTorrentPlayer(
+                    TorrentPlaybackRequest(
+                        title = json.optString("title"),
+                        magnetUri = json.optString("magnetUri").takeIf { it.isNotBlank() },
+                        torrentUrl = json.optString("torrentUrl").takeIf { it.isNotBlank() },
+                        trackers = trackers,
+                    ),
+                ),
+            )
+            true
+        } catch (e: JSONException) {
+            Timber.e("launchTorrentPlayer failed: %s", e.message)
+            false
+        }
     }
 
     @JavascriptInterface

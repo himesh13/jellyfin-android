@@ -36,6 +36,11 @@ import org.jellyfin.mobile.player.qualityoptions.QualityOptionsProvider
 import org.jellyfin.mobile.player.source.MediaSourceResolver
 import org.jellyfin.mobile.player.ui.PlayerFragment
 import org.jellyfin.mobile.setup.ConnectionHelper
+import org.jellyfin.mobile.torrent.NoOpTorrentEngine
+import org.jellyfin.mobile.torrent.NoOpTorrentSearchService
+import org.jellyfin.mobile.torrent.TorrentEngine
+import org.jellyfin.mobile.torrent.TorrentProviderRepository
+import org.jellyfin.mobile.torrent.TorrentSearchService
 import org.jellyfin.mobile.utils.Constants
 import org.jellyfin.mobile.utils.PermissionRequestHelper
 import org.jellyfin.mobile.utils.extractId
@@ -67,7 +72,7 @@ val applicationModule = module {
     single { ApiClientController(get(), get(), get(), get(), get()) }
 
     // Event handlers and channels
-    single { ActivityEventHandler(get()) }
+    single { ActivityEventHandler(get(), get()) }
     single { WebappFunctionChannel() }
 
     // Bridge interfaces
@@ -90,6 +95,9 @@ val applicationModule = module {
     single { DeviceProfileBuilder(get()) }
     single { QualityOptionsProvider() }
     single { MediaSegmentRepository() }
+    single<TorrentEngine> { NoOpTorrentEngine() }
+    single<TorrentSearchService> { NoOpTorrentSearchService() }
+    single { TorrentProviderRepository(get()) }
 
     // ExoPlayer factories
     single<DatabaseProvider> {
