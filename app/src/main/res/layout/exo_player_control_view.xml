@@ -271,6 +271,5 @@
         android:padding="@dimen/exo_bottom_controls_padding"
         android:src="@drawable/ic_fullscreen_enter_white_32dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/playback_mode_button" />
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

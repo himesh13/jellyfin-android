@@ -345,19 +345,23 @@ class PlayerMenus(
     private fun createPlaybackModeMenu() = PopupMenu(context, playbackModeButton).apply {
         menu.add(
             PLAYBACK_MODE_MENU_GROUP,
-            PlaybackMode.VIDEO_AUDIO.ordinal,
+            PLAYBACK_MODE_VIDEO_AUDIO,
             Menu.NONE,
             context.getString(R.string.player_playback_mode_video_audio),
         )
         menu.add(
             PLAYBACK_MODE_MENU_GROUP,
-            PlaybackMode.AUDIO_ONLY.ordinal,
+            PLAYBACK_MODE_AUDIO_ONLY,
             Menu.NONE,
             context.getString(R.string.player_playback_mode_audio_only),
         )
         menu.setGroupCheckable(PLAYBACK_MODE_MENU_GROUP, true, true)
         setOnMenuItemClickListener { clickedItem ->
-            val mode = PlaybackMode.entries.getOrNull(clickedItem.itemId) ?: return@setOnMenuItemClickListener false
+            val mode = when (clickedItem.itemId) {
+                PLAYBACK_MODE_VIDEO_AUDIO -> PlaybackMode.VIDEO_AUDIO
+                PLAYBACK_MODE_AUDIO_ONLY -> PlaybackMode.AUDIO_ONLY
+                else -> return@setOnMenuItemClickListener false
+            }
             fragment.onPlaybackModeSelected(mode)
             true
         }
@@ -401,7 +405,11 @@ class PlayerMenus(
     }
 
     private fun updatePlaybackModeMenu() {
-        val item = playbackModeMenu.menu.findItem(playbackMode.ordinal)
+        val itemId = when (playbackMode) {
+            PlaybackMode.VIDEO_AUDIO -> PLAYBACK_MODE_VIDEO_AUDIO
+            PlaybackMode.AUDIO_ONLY -> PLAYBACK_MODE_AUDIO_ONLY
+        }
+        val item = playbackModeMenu.menu.findItem(itemId)
         if (item == null) {
             Timber.w("Playback mode menu item not found for mode %s", playbackMode)
             return
@@ -458,6 +466,8 @@ class PlayerMenus(
         private const val QUALITY_MENU_GROUP = 3
         private const val DECODER_MENU_GROUP = 4
         private const val PLAYBACK_MODE_MENU_GROUP = 5
+        private const val PLAYBACK_MODE_VIDEO_AUDIO = 1
+        private const val PLAYBACK_MODE_AUDIO_ONLY = 2
 
         private const val MAX_VIDEO_STREAMS_DISPLAY = 3
         private const val MAX_AUDIO_STREAMS_DISPLAY = 5

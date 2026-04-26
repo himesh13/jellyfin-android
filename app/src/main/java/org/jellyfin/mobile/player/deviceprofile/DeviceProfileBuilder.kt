@@ -183,10 +183,11 @@ class DeviceProfileBuilder(
         }
 
         val subtitleProfiles = getSubtitleProfiles(emptyArray(), EXO_EXTERNAL_SUBTITLES)
+        val audioTranscodingProfiles = transcodingProfiles.filter { profile -> profile.type == DlnaProfileType.AUDIO }
         return DeviceProfile(
             name = "${Constants.APP_INFO_NAME} Audio Only",
             directPlayProfiles = audioDirectPlayProfiles,
-            transcodingProfiles = transcodingProfiles.filter { profile -> profile.type == DlnaProfileType.AUDIO },
+            transcodingProfiles = audioTranscodingProfiles,
             containerProfiles = audioContainerProfiles,
             codecProfiles = emptyList(),
             subtitleProfiles = subtitleProfiles,

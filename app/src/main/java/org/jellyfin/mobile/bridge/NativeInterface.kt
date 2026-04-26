@@ -165,12 +165,9 @@ class NativeInterface(private val context: Context) : KoinComponent {
         return try {
             val json = JSONObject(args)
             val trackersJson = json.optJSONArray("trackers")
-            val trackers = ArrayList<String>()
-            if (trackersJson != null) {
-                for (i in 0 until trackersJson.length()) {
-                    trackers += trackersJson.optString(i)
-                }
-            }
+            val trackers = trackersJson?.let { array ->
+                (0 until array.length()).map { index -> array.optString(index) }
+            } ?: emptyList()
             emitEvent(
                 ActivityEvent.LaunchTorrentPlayer(
                     TorrentPlaybackRequest(

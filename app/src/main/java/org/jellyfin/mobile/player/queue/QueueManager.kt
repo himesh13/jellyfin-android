@@ -155,8 +155,7 @@ class QueueManager(
             ) {
                 // Some servers/content combinations don't expose a truly audio-only source.
                 // In that case we gracefully fallback to the regular video+audio stream.
-                currentPlaybackMode = PlaybackMode.VIDEO_AUDIO
-                return startRemotePlayback(
+                val fallbackError = startRemotePlayback(
                     itemId = itemId,
                     mediaSourceId = mediaSourceId,
                     playbackMode = PlaybackMode.VIDEO_AUDIO,
@@ -167,6 +166,10 @@ class QueueManager(
                     playWhenReady = playWhenReady,
                     allowAudioOnlyFallback = false,
                 )
+                if (fallbackError == null) {
+                    currentPlaybackMode = PlaybackMode.VIDEO_AUDIO
+                }
+                return fallbackError
             }
 
             // Ensure transcoding of the current element is stopped
