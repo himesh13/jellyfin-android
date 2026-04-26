@@ -45,6 +45,10 @@ object Constants {
     const val PREF_DOWNLOAD_LOCATION = "pref_download_location"
     const val PREF_DOWNLOAD_INTERNAL = "pref_download_internal"
     const val PREF_MEDIA_SEGMENT_ACTIONS = "pref_media_segment_actions"
+    const val PREF_TORRENT_PROVIDER_CONFIG = "pref_torrent_provider_config"
+    const val PREF_TORRENT_CACHE_MAX_MB = "pref_torrent_cache_max_mb"
+    const val PREF_TORRENT_WIFI_ONLY = "pref_torrent_wifi_only"
+    const val PREF_TORRENT_AUTO_CLEANUP = "pref_torrent_auto_cleanup"
 
     // InputManager commands
     const val PLAYBACK_MANAGER_COMMAND_PLAY = "unpause"

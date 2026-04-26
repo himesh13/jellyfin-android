@@ -38,6 +38,7 @@ android {
         versionCode = getVersionCode(versionName!!)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+        buildConfigField("boolean", "ENABLE_TORRENT_STREAMING", "false")
     }
 
     val releaseSigningConfig = SigningHelper.loadSigningConfig(project)?.let { config ->

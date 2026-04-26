@@ -46,6 +46,7 @@ import org.jellyfin.mobile.player.mediasegments.MediaSegmentRepository
 import org.jellyfin.mobile.player.queue.QueueManager
 import org.jellyfin.mobile.player.source.JellyfinMediaSource
 import org.jellyfin.mobile.player.source.RemoteJellyfinMediaSource
+import org.jellyfin.mobile.torrent.TorrentEngine
 import org.jellyfin.mobile.player.ui.DecoderType
 import org.jellyfin.mobile.player.ui.DisplayPreferences
 import org.jellyfin.mobile.player.ui.PlayState
@@ -112,6 +113,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     val mediaSourceOrNull: JellyfinMediaSource?
         get() = queueManager.getCurrentMediaSourceOrNull()
     private val mediaSegmentRepository: MediaSegmentRepository by inject()
+    private val torrentEngine: TorrentEngine by inject()
 
     // ExoPlayer
     private val _player = MutableLiveData<ExoPlayer?>()
@@ -687,6 +689,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
     fun stop() {
         pause()
         reportPlaybackStop()
+        viewModelScope.launch { torrentEngine.stopStreaming() }
         releasePlayer()
     }
 
@@ -779,6 +782,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application),
 
     override fun onCleared() {
         reportPlaybackStop()
+        viewModelScope.launch { torrentEngine.stopStreaming() }
         ProcessLifecycleOwner.get().lifecycle.removeObserver(lifecycleObserver)
         releasePlayer()
     }

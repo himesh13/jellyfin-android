@@ -3,6 +3,7 @@ package org.jellyfin.mobile.events
 import android.net.Uri
 import org.jellyfin.mobile.player.interaction.PlayOptions
 import org.jellyfin.mobile.player.source.LocalJellyfinMediaSource
+import org.jellyfin.mobile.torrent.TorrentPlaybackRequest
 import org.json.JSONArray
 
 sealed class ActivityEvent {
@@ -10,6 +11,7 @@ sealed class ActivityEvent {
     class LaunchNativePlayer(val playOptions: PlayOptions) : ActivityEvent()
     class OpenUrl(val uri: String) : ActivityEvent()
     class DownloadFile(val uri: Uri, val title: String, val filename: String) : ActivityEvent()
+    class LaunchTorrentPlayer(val request: TorrentPlaybackRequest) : ActivityEvent()
     class RemoveDownload(val download: LocalJellyfinMediaSource, val force: Boolean = false) : ActivityEvent()
     class CastMessage(val action: String, val args: JSONArray) : ActivityEvent()
     data object RequestBluetoothPermission : ActivityEvent()

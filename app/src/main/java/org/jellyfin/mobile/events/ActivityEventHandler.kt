@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -12,12 +13,14 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.jellyfin.mobile.MainActivity
+import org.jellyfin.mobile.BuildConfig
 import org.jellyfin.mobile.R
 import org.jellyfin.mobile.bridge.JavascriptCallback
 import org.jellyfin.mobile.downloads.DownloadsFragment
 import org.jellyfin.mobile.player.ui.PlayerFragment
 import org.jellyfin.mobile.player.ui.PlayerFullscreenHelper
 import org.jellyfin.mobile.settings.SettingsFragment
+import org.jellyfin.mobile.torrent.TorrentEngine
 import org.jellyfin.mobile.utils.Constants
 import org.jellyfin.mobile.utils.extensions.addFragment
 import org.jellyfin.mobile.utils.removeDownload
@@ -27,6 +30,7 @@ import timber.log.Timber
 
 class ActivityEventHandler(
     private val webappFunctionChannel: WebappFunctionChannel,
+    private val torrentEngine: TorrentEngine,
 ) {
     private val eventsFlow = MutableSharedFlow<ActivityEvent>(
         extraBufferCapacity = 10,
@@ -77,6 +81,15 @@ class ActivityEventHandler(
             is ActivityEvent.DownloadFile -> {
                 lifecycleScope.launch {
                     with(event) { requestDownload(uri, filename) }
+                }
+            }
+            is ActivityEvent.LaunchTorrentPlayer -> {
+                lifecycleScope.launch {
+                    if (!BuildConfig.ENABLE_TORRENT_STREAMING) {
+                        Toast.makeText(this@handleEvent, R.string.torrent_streaming_disabled, Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    torrentEngine.startStreaming(event.request)
                 }
             }
             is ActivityEvent.RemoveDownload -> {

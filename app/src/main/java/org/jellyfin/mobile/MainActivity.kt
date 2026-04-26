@@ -37,6 +37,7 @@ import org.jellyfin.mobile.utils.extensions.replaceFragment
 import org.jellyfin.mobile.utils.isWebViewSupported
 import org.jellyfin.mobile.webapp.RemotePlayerService
 import org.jellyfin.mobile.webapp.WebViewFragment
+import org.jellyfin.mobile.torrent.TorrentEngine
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 import org.koin.androidx.fragment.android.setupKoinFragmentFactory
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     val bluetoothPermissionHelper: BluetoothPermissionHelper = BluetoothPermissionHelper(this, get())
     val chromecast: IChromecast = Chromecast()
     private val permissionRequestHelper: PermissionRequestHelper by inject()
+    private val torrentEngine: TorrentEngine by inject()
 
     var serviceBinder: RemotePlayerService.ServiceBinder? = null
         private set
@@ -143,6 +145,10 @@ class MainActivity : AppCompatActivity() {
 
         // Setup Chromecast
         chromecast.initializePlugin(this)
+
+        lifecycleScope.launch {
+            torrentEngine.cleanupStaleCache()
+        }
     }
 
     override fun onStart() {

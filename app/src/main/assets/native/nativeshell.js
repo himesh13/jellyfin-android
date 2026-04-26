@@ -78,6 +78,10 @@ window.NativeShell = {
         window.NativeInterface.openDownloads();
     },
 
+    launchTorrentPlayer(request) {
+        window.NativeInterface.launchTorrentPlayer(JSON.stringify(request));
+    },
+
     selectServer() {
         window.NativeInterface.openServerSelection();
     },
