@@ -357,7 +357,7 @@ class PlayerMenus(
         )
         menu.setGroupCheckable(PLAYBACK_MODE_MENU_GROUP, true, true)
         setOnMenuItemClickListener { clickedItem ->
-            val mode = PlaybackMode.entries[clickedItem.itemId]
+            val mode = PlaybackMode.entries.getOrNull(clickedItem.itemId) ?: return@setOnMenuItemClickListener false
             fragment.onPlaybackModeSelected(mode)
             true
         }

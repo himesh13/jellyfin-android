@@ -169,7 +169,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="audio_streams_button,subtitles_button,playback_mode_button,fullscreen_switcher" />
+        app:constraint_referenced_ids="audio_streams_button,subtitles_button,fullscreen_switcher" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/lock_screen_button"

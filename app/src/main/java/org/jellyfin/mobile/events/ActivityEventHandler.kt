@@ -89,7 +89,9 @@ class ActivityEventHandler(
                         Toast.makeText(this@handleEvent, R.string.torrent_streaming_disabled, Toast.LENGTH_SHORT).show()
                         return@launch
                     }
-                    torrentEngine.startStreaming(event.request)
+                    torrentEngine.startStreaming(event.request).onFailure {
+                        Toast.makeText(this@handleEvent, R.string.torrent_streaming_failed, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             is ActivityEvent.RemoveDownload -> {

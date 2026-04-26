@@ -136,6 +136,7 @@ class QueueManager(
         audioStreamIndex: Int? = null,
         subtitleStreamIndex: Int? = null,
         playWhenReady: Boolean = true,
+        allowAudioOnlyFallback: Boolean = true,
     ): PlayerException? {
         mediaSourceResolver.resolveMediaSource(
             itemId = itemId,
@@ -147,11 +148,15 @@ class QueueManager(
             audioStreamIndex = audioStreamIndex,
             subtitleStreamIndex = subtitleStreamIndex,
         ).onSuccess { jellyfinMediaSource ->
-            if (playbackMode == PlaybackMode.AUDIO_ONLY && jellyfinMediaSource.selectedVideoStream != null) {
+            if (
+                playbackMode == PlaybackMode.AUDIO_ONLY &&
+                allowAudioOnlyFallback &&
+                jellyfinMediaSource.selectedVideoStream != null
+            ) {
                 // Some servers/content combinations don't expose a truly audio-only source.
                 // In that case we gracefully fallback to the regular video+audio stream.
                 currentPlaybackMode = PlaybackMode.VIDEO_AUDIO
-                startRemotePlayback(
+                return startRemotePlayback(
                     itemId = itemId,
                     mediaSourceId = mediaSourceId,
                     playbackMode = PlaybackMode.VIDEO_AUDIO,
@@ -160,8 +165,8 @@ class QueueManager(
                     audioStreamIndex = audioStreamIndex,
                     subtitleStreamIndex = subtitleStreamIndex,
                     playWhenReady = playWhenReady,
+                    allowAudioOnlyFallback = false,
                 )
-                return null
             }
 
             // Ensure transcoding of the current element is stopped
